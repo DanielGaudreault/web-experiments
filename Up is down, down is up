@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      height: 300vh;
+      background: linear-gradient(white, black);
+    }
+    .counter {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: black;
+      color: white;
+      padding: 10px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+<div style="position:fixed; top:20%; left:10%; font-size:2rem;">⬆️ scroll up = go down ⬇️</div>
+<div class="counter">inverted scroll active</div>
+<script>
+  let targetScroll = window.scrollY;
+  let currentScroll = window.scrollY;
+  
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    // invert delta
+    targetScroll += e.deltaY * -1;
+    targetScroll = Math.min(document.body.scrollHeight - window.innerHeight, Math.max(0, targetScroll));
+    
+    function animate() {
+      currentScroll += (targetScroll - currentScroll) * 0.2;
+      window.scrollTo(0, currentScroll);
+      if (Math.abs(targetScroll - currentScroll) > 0.5) requestAnimationFrame(animate);
+    }
+    animate();
+  }, { passive: false });
+</script>
+</body>
+</html>
