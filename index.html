@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Unusual Web Experiments | GitHub Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, monospace;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 2rem;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+            font-family: monospace;
+        }
+
+        .description {
+            margin: 1rem 0;
+            line-height: 1.5;
+            color: #ddd;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.3rem 0;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li::before {
+            content: "⚡";
+            margin-right: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #4ecdc4;
+            color: #1a1a2e;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .grid { gap: 1rem; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Unusual Web Experiments</h1>
+        <div class="subtitle">4 web ideas that (probably) no one has made yet</div>
+
+        <div class="grid">
+            <!-- Experiment 1 -->
+            <div class="card">
+                <h2>⏰ Time-Travel Scroll</h2>
+                <div class="badge">🎨 Scroll Innovation</div>
+                <div class="description">
+                    Scrollbar controls time, not position. Drag the thumb to travel through eras.
+                </div>
+                <ul class="feature-list">
+                    <li>No traditional scrolling</li>
+                    <li>Narrative time control</li>
+                    <li>Retro-futuristic UI</li>
+                </ul>
+                <a href="1-time-travel-scroll.html" class="btn">Launch Experiment →</a>
+            </div>
+
+            <!-- Experiment 2 -->
+            <div class="card">
+                <h2>🎮 Mouse Audio Poem</h2>
+                <div class="badge">🎵 Sonic Interface</div>
+                <div class="description">
+                    Your mouse becomes an instrument. X = pan, Y = volume, speed = opacity.
+                </div>
+                <ul class="feature-list">
+                    <li>Web Audio synthesis</li>
+                    <li>No visible controls</li>
+                    <li>Poetic interaction</li>
+                </ul>
+                <a href="2-mouse-audio-poem.html" class="btn">Launch Experiment →</a>
+            </div>
+
+            <!-- Experiment 3 -->
+            <div class="card">
+                <h2>🔄 Reverse Scroll</h2>
+                <div class="badge">🌀 Perception Hack</div>
+                <div class="description">
+                    Up is down, down is up. Break your brain's scroll expectations.
+                </div>
+                <ul class="feature-list">
+                    <li>Inverted physics</li>
+                    <li>Minimalist design</li>
+                    <li>Disorienting fun</li>
+                </ul>
+                <a href="3-reverse-scroll.html" class="btn">Launch Experiment →</a>
+            </div>
+
+            <!-- Experiment 4 -->
+            <div class="card">
+                <h2>🌬️ Breathing Orb</h2>
+                <div class="badge">📷 Computer Vision</div>
+                <div class="description">
+                    Webcam detects your breath rhythm. The orb expands and contracts with you.
+                </div>
+                <ul class="feature-list">
+                    <li>Real-time breath analysis</li>
+                    <li>Meditative experience</li>
+                    <li>Camera-based interaction</li>
+                </ul>
+                <a href="4-breathing-orb.html" class="btn">Launch Experiment →</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔥 Built with vanilla HTML/CSS/JS — no frameworks, no libraries</p>
+            <p>💡 Each experiment explores an unusual interaction paradigm</p>
+        </div>
+    </div>
+</body>
+</html>
