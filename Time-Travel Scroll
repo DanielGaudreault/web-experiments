@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: monospace; margin: 0; overflow: hidden; background: black; color: lime; }
+    #time-display { position: fixed; top: 0; left: 0; background: #222; padding: 8px; z-index: 10; }
+    #scroll-area {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 8px;
+      background: #333;
+      cursor: pointer;
+    }
+    #scroll-thumb {
+      width: 10%;
+      height: 100%;
+      background: lime;
+      position: relative;
+    }
+    #content { padding: 80px 20px 60px; }
+    .scene { display: none; }
+    .active-scene { display: block; }
+  </style>
+</head>
+<body>
+<div id="time-display">Year: 0</div>
+<div id="content">
+  <div id="scene0" class="scene active-scene">🏛️ 1999: Dial-up modems scream.</div>
+  <div id="scene1" class="scene">📱 2007: iPhone changes everything.</div>
+  <div id="scene2" class="scene">🤖 2023: AI writes your emails.</div>
+  <div id="scene3" class="scene">🌀 2030: Scrollbar controls time travel.</div>
+</div>
+<div id="scroll-area"><div id="scroll-thumb"></div></div>
+
+<script>
+  const scenes = ['scene0','scene1','scene2','scene3'];
+  const thumb = document.getElementById('scroll-thumb');
+  const area = document.getElementById('scroll-area');
+  let dragging = false;
+
+  function setProgress(percent) {
+    let maxX = area.clientWidth - thumb.clientWidth;
+    thumb.style.left = percent * maxX + 'px';
+    let sceneIndex = Math.min(scenes.length-1, Math.floor(percent * scenes.length));
+    document.querySelectorAll('.scene').forEach(el => el.classList.remove('active-scene'));
+    document.getElementById(scenes[sceneIndex]).classList.add('active-scene');
+    document.getElementById('time-display').innerText = `Year: ${2000 + sceneIndex*10}`;
+  }
+
+  thumb.addEventListener('mousedown', (e) => { dragging = true; });
+  window.addEventListener('mousemove', (e) => {
+    if(!dragging) return;
+    let rect = area.getBoundingClientRect();
+    let percent = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    setProgress(percent);
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+  window.addEventListener('resize', () => setProgress(0.25));
+</script>
+</body>
+</html>
