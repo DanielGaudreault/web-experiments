@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Experiment 2: Mouse Audio Poem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: opacity 0.05s linear;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            color: white;
+            font-family: monospace;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        .poem-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .poem {
+            max-width: 800px;
+        }
+
+        .poem h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .poem p {
+            font-size: 1.5rem;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 1rem 0;
+        }
+
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #4ecdc4;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .status {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #ff6b6b;
+            z-index: 100;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .click-hint {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            animation: pulse 2s infinite;
+            z-index: 200;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .poem h1 { font-size: 1.5rem; }
+            .poem p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🎵 EXPERIMENT 02: MOUSE AUDIO POEM</div>
+        <a href="index.html" class="back-btn">← BACK TO HUB</a>
+    </div>
+
+    <div class="status" id="status">🎚️ Ready</div>
+
+    <div class="poem-container">
+        <div class="poem">
+            <h1>✦ The Silent Interface ✦</h1>
+            <p>Move your mouse left → right<br>
+            to pan the sound across the void</p>
+            <p>Move your mouse up → down<br>
+            to raise or lower the hum</p>
+            <p>Move it fast, and watch the words fade<br>
+            slow down, and they return</p>
+            <p><em style="color: #4ecdc4;">— your mouse is the only controller —</em></p>
+        </div>
+    </div>
+
+    <div class="controls-info">
+        🖱️ LEFT/RIGHT = AUDIO PAN | 🖱️ UP/DOWN = VOLUME | 🖱️ SPEED = POEM OPACITY
+    </div>
+
+    <div class="click-hint" id="clickHint">🎵 CLICK ANYWHERE TO START AUDIO 🎵</div>
+
+    <script>
+        let audioContext = null;
+        let oscillator = null;
+        let gainNode = null;
+        let pannerNode = null;
+        let isAudioStarted = false;
+        
+        let lastX = 0, lastY = 0, lastTime = 0;
+        const statusDiv = document.getElementById('status');
+        const clickHint = document.getElementById('clickHint');
+
+        function initAudio() {
+            if (isAudioStarted) return;
+            
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            pannerNode = audioContext.createStereoPanner();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 440;
+            gainNode.gain.value = 0.3;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(pannerNode);
+            pannerNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            isAudioStarted = true;
+            clickHint.style.display = 'none';
+            statusDiv.innerHTML = '🎧 AUDIO ACTIVE | Move mouse to control';
+        }
+
+        function updateFromMouse(e) {
+            if (!isAudioStarted) return;
+            
+            const now = performance.now();
+            const dx = e.clientX - lastX;
+            const dy = e.clientY - lastY;
+            const dt = Math.max(16, now - lastTime);
+            const speed = Math.hypot(dx, dy) / dt;
+            
+            // X position -> Pan (-1 left, 1 right)
+            const pan = (e.clientX / window.innerWidth) * 2 - 1;
+            pannerNode.pan.value = pan;
+            
+            // Y position -> Volume (0 to 1)
+            const volume = 1 - (e.clientY / window.innerHeight);
+            gainNode.gain.value = volume * 0.5;
+            
+            // Speed -> Opacity (faster = more transparent)
+            const opacity = Math.max(0.2, 1 - Math.min(0.8, speed * 1.5));
+            document.body.style.opacity = opacity;
+            
+            // Update status
+            statusDiv.innerHTML = `🎚️ Pan: ${pan.toFixed(2)} | Vol: ${volume.toFixed(2)} | Speed: ${speed.toFixed(2)}`;
+            
+            lastX = e.clientX;
+            lastY = e.clientY;
+            lastTime = now;
+        }
+
+        document.body.addEventListener('click', () => {
+            initAudio();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isAudioStarted) return;
+            updateFromMouse(e);
+        });
+
+        // Initial positions
+        window.addEventListener('load', () => {
+            lastX = window.innerWidth / 2;
+            lastY = window.innerHeight / 2;
+            lastTime = performance.now();
+        });
+    </script>
+</body>
+</html>
