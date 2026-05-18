@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌬️ Experiment 4: Breathing Orb</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            color: white;
+            font-family: monospace;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        .orb-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .orb {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 107, 107, 0.5);
+            transition: transform 0.05s linear;
+            cursor: pointer;
+        }
+
+        .breath-text {
+            margin-top: 3rem;
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            color: #4ecdc4;
+            font-family: monospace;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .instruction {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: #ff6b6b;
+            font-family: monospace;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+
+        .camera-preview {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 160px;
+            height: 120px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+            overflow: hidden;
+            z-index: 100;
+            background: black;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .camera-preview:hover {
+            opacity: 1;
+        }
+
+        .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes breatheHint {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: white;
+            text-align: center;
+            pointer-events: none;
+            z-index: 200;
+            animation: breatheHint 3s infinite;
+            background: rgba(0,0,0,0.7);
+            padding: 2rem;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .orb { width: 150px; height: 150px; }
+            .hint { font-size: 1rem; white-space: normal; width: 80%; }
+            .camera-preview { width: 120px; height: 90px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🌬️ EXPERIMENT 04: BREATHING ORB</div>
+        <a href="index.html" class="back-btn">← BACK TO HUB</a>
+    </div>
+
+    <div class="orb-container">
+        <div class="orb" id="orb"></div>
+        <div class="breath-text" id="breathText">🌬️ Breathe steadily...</div>
+    </div>
+
+    <div class="status" id="status">📷 Initializing camera...</div>
+    <div class="instruction">🎯 Breathe naturally — the orb follows your breath rhythm</div>
+
+    <div class="camera-preview" id="cameraPreview"></div>
+    <div class="hint" id="hint">🎥 CAMERA NEEDED → CLICK "ALLOW"</div>
+
+    <script>
+        const orb = document.getElementById('orb');
+        const statusDiv = document.getElementById('status');
+        const breathText = document.getElementById('breathText');
+        const hint = document.getElementById('hint');
+        const cameraPreview = document.getElementById('cameraPreview');
+        
+        let video = null;
+        let canvas = null;
+        let prevBrightness = 0;
+        let amplitude = 1;
+        let breathHistory = [];
+        
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 320 }, height: { ideal: 240 } }
+                });
+                
+                video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+                video.muted = true;
+                video.playsInline = true;
+                
+                // Add to preview
+                cameraPreview.appendChild(video);
+                
+                canvas = document.createElement('canvas');
+                canvas.width = 320;
+                canvas.height = 240;
+                
+                hint.style.display = 'none';
+                statusDiv.innerHTML = '✅ Camera active | Breathe normally — orb responds to chest movement';
+                
+                startBreathingAnalysis();
+                
+            } catch (err) {
+                statusDiv.innerHTML = '❌ Camera error: ' + err.message;
+                breathText.innerHTML = '😢 Camera access needed for breathing detection';
+                hint.style.display = 'none';
+            }
+        }
+        
+        function startBreathingAnalysis() {
+            const ctx = canvas.getContext('2d');
+            
+            function analyzeBreath() {
+                if (!video || video.videoWidth === 0) {
+                    requestAnimationFrame(analyzeBreath);
+                    return;
+                }
+                
+                // Draw current frame to canvas
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Get average brightness
+                const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let brightness = 0;
+                for (let i = 0; i < frame.data.length; i += 4) {
+                    brightness += (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3;
+                }
+                brightness /= (frame.data.length / 4);
+                
+                // Calculate change (this crude method detects breathing motion)
+                let delta = brightness - prevBrightness;
+                
+                // Smooth the delta
+                breathHistory.push(delta);
+                if (breathHistory.length > 10) breathHistory.shift();
+                const avgDelta = breathHistory.reduce((a, b) => a + b, 0) / breathHistory.length;
+                
+                // Map to orb scale (0.7 to 1.5)
+                amplitude = Math.min(1.5, Math.max(0.7, amplitude + avgDelta * 0.008));
+                
+                // Apply to orb
+                orb.style.transform = `scale(${amplitude})`;
+                
+                // Update breath text
+                if (amplitude > 1.2) {
+                    breathText.innerHTML = '😤 INHALE...';
+                    breathText.style.color = '#ff6b6b';
+                } else if (amplitude < 0.9) {
+                    breathText.innerHTML = '🌬️ EXHALE...';
+                    breathText.style.color = '#4ecdc4';
+                } else {
+                    breathText.innerHTML = '🧘 Breathe peacefully';
+                    breathText.style.color = 'white';
+                }
+                
+                // Update status
+                const breathePercent = ((amplitude - 0.7) / 0.8) * 100;
+                statusDiv.innerHTML = `🌊 Breath amplitude: ${breathePercent.toFixed(0)}% | ${amplitude > 1.1 ? 'Inhaling' : amplitude < 0.9 ? 'Exhaling' : 'Center'}`;
+                
+                prevBrightness = brightness;
+                requestAnimationFrame(analyzeBreath);
+            }
+            
+            requestAnimationFrame(analyzeBreath);
+        }
+        
+        // Start camera on page load
+        initCamera();
+        
+        // Add click-to-focus effect
+        orb.addEventListener('click', () => {
+            orb.style.boxShadow = '0 0 100px rgba(255, 107, 107, 0.8)';
+            setTimeout(() => {
+                orb.style.boxShadow = '0 0 50px rgba(255, 107, 107, 0.5)';
+            }, 500);
+        });
+    </script>
+</body>
+</html>
